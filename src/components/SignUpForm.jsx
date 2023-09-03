@@ -1,5 +1,6 @@
 import React from 'react'
 import { useState } from 'react';
+import { signUp } from '../utilities/users-service'
 
 const SignUpForm = () => {
 
@@ -14,12 +15,28 @@ const SignUpForm = () => {
 	const disable = formData ? formData.password !== formData.confirm : false;
 
 	const handleChange = (e) => {
-		setFormData({ ...formData, [e.target.name]: e.target.value, });
+		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 	
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		console.log('ALERT', formData);
+	const handleSubmit = async (e) =>  {
+
+		// Prevent form from being submitted to the server
+		e.preventDefault()
+		try {
+			// We don't want to send the 'error' or 'confirm' property,
+			// so let's make a copy of the state object, then delete them
+			const newFormData = {...formData};
+			delete newFormData.error;
+			delete newFormData.confirm;
+			// or
+			// const {name, email, password} = formData
+			const user = await signUp(newFormData);
+			console.log(await user);
+			console.log("inside handleSubmit");
+		} catch(err) {
+			// An error occurred
+			setFormData({...formData, error: 'Sign Up Failed - Try Again'})
+		}
 	}
 
 	return (
@@ -31,7 +48,7 @@ const SignUpForm = () => {
 					<label>Name</label>
 					<input type="text" name="name" value={formData.name} onChange={handleChange} required />
 					<label>Email</label>
-					<input type="email" name="email" value={formData.email} onChange={handleChange} required />
+					<input type="email" name="email" value={formData.email} onChange={handleChange} /* required */ />
 					<label>Password</label>
 					<input type="password" name="password" value={formData.password} onChange={handleChange} required />
 					<label>Confirm</label>
